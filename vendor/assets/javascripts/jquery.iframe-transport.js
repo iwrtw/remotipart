@@ -118,8 +118,20 @@
         return files.get(idx);
       });
       form.remove();
-      iframe.attr("src", "javascript:false;").remove();
+      iframe.remove();
     }
+
+    // Set responder, defaulting to 'callback'. The 'callback' responder will
+    // attempt to fire the jQuery `done` callback (`completeCallback` below).
+    // The 'message' responder causes that callback to be ignored and assumes
+    // that the iframe content will include its own implementation with a call
+    // to `postMessage`, allowing for cross-origin requests. e.g.,
+    //
+    //   parent.postMessage({
+    //     contentType : "application/json",
+    //     response    : {"ok": true, "message": "Thanks so much"}
+    //   }, "http://example.com");
+    options.responder = options.responder || 'callback';
 
     // Remove "iframe" from the data types list so that further processing is
     // based on the content type returned by the server, without attempting an
@@ -178,21 +190,25 @@
             // actual payload is embedded in a `<textarea>` element, and
             // prepares the required conversions to be made in that case.
             iframe.unbind("load").bind("load", function() {
-              var doc = this.contentWindow ? this.contentWindow.document :
-                (this.contentDocument ? this.contentDocument : this.document),
-                root = doc.documentElement ? doc.documentElement : doc.body,
-                textarea = root.getElementsByTagName("textarea")[0],
-                type = textarea ? textarea.getAttribute("data-type") : null,
-                content = {
-                  html: root.innerHTML,
-                  text: type ?
-                    textarea.value :
-                    root ? (root.textContent || root.innerText) : null
-                };
+              if(options.responder === 'callback') {
+                var doc = this.contentWindow ? this.contentWindow.document :
+                  (this.contentDocument ? this.contentDocument : this.document),
+                  root = doc.documentElement ? doc.documentElement : doc.body,
+                  textarea = root.getElementsByTagName("textarea")[0],
+                  type = textarea ? textarea.getAttribute("data-type") : null,
+                  content = {
+                    html: root.innerHTML,
+                    text: type ?
+                      textarea.value :
+                      root ? (root.textContent || root.innerText) : null
+                  };
+
+                completeCallback(200, "OK", content, type ?
+                  ("Content-Type: " + type) :
+                  null);
+              }
+
               cleanUp();
-              completeCallback(200, "OK", content, type ?
-                ("Content-Type: " + type) :
-                null);
             });
 
             // Now that the load handler has been set up, submit the form.

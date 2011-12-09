@@ -19,6 +19,7 @@
 
           settings.iframe      = true;
           settings.files       = $($.rails.fileInputSelector, form);
+          settings.responder   = 'message';
           settings.data        = form.serializeArray();
           settings.processData = false;
 
