@@ -25,7 +25,8 @@
 
           // Modify some settings to integrate JS request with rails helpers and middleware
           if (settings.dataType === undefined) { settings.dataType = 'script *'; }
-          settings.data.push({name: 'remotipart_submitted', value: true});
+          settings.data.push({ name: 'remotipart_submitted', value: true });
+          settings.data.push({ name: 'remotipart_context', value: form.attr('id') });
 
           // Allow remotipartSubmit to be cancelled if needed
           if ($.rails.fire(form, 'ajax:remotipartSubmit', [xhr, settings])) {

@@ -15,7 +15,7 @@ module Remotipart
               <script type="text/javascript" charset="utf-8">
                 function respond() {
                   parent.postMessage({
-                    targetName  : window.name,
+                    contextId   : "#{params[:remotipart_context]}" || null,
                     contentType : "#{content_type}",
                     statusCode  : "#{response.response_code}",
                     response    : #{response.body}
